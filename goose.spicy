@@ -1,0 +1,64 @@
+
+module GOOSE;
+
+import spicy;
+
+# Enumeration of data type tags
+type DataType_Tag = enum {
+	BOOLEAN = 131,
+	BIT_STRING = 132,
+	INTEGER = 133,
+	UNSIGNED = 134,
+	FLOATING = 135,
+	OCTET_STRING = 137,
+	VISIBLE_STRING = 138,
+	UTC_TIME = 145
+};
+
+# Define the structure of TAG LENGTH VALUE format
+type TLV = unit{
+	tag: uint8;
+	length: uint8;
+	data: bytes &size=self.length;
+};
+
+# Mandatory for develop a table of TLV
+type Data = unit{
+	tag: uint8;
+	length: uint8;
+	data: bytes &size=self.length;
+}&convert=self.data.to_uint(spicy::ByteOrder::Big);
+
+# A draft of UTCTime_mms type
+type UTC_Time_MMS = unit {
+	epoc : uint32;
+	fraction : bitfield(32) {};
+	quality : uint8;
+};
+
+# Define how to parse a GOOSE packet as well as fields name
+public type goose_packet = unit {
+
+	appid: uint16;
+	lengthHeader: uint16;
+	reserved1: uint16;
+	reserved2: uint16;
+	tag: uint16;
+	lengthPdu: uint8;
+	gocbRef: TLV &convert= $$.data.decode();
+	timeAllowedtoLive: TLV &convert= $$.data.to_uint(spicy::ByteOrder::Big);
+	Dataset: TLV &convert= $$.data.decode();
+	goID: TLV &convert= $$.data.decode();
+	Time: TLV &convert= $$.data.to_uint(spicy::ByteOrder::Big);
+	st_Num: TLV &convert= $$.data.to_uint(spicy::ByteOrder::Big);
+	sq_Num: TLV &convert= $$.data.to_uint(spicy::ByteOrder::Big);
+	Test: TLV &convert= $$.data !in b"\x00";
+	confRev: TLV &convert= $$.data.to_uint(spicy::ByteOrder::Big);
+	ndsCom: TLV &convert= $$.data !in b"\x00";
+	numDatSetEntries: TLV &convert= $$.data.to_uint(spicy::ByteOrder::Big);
+	: uint16;
+	allData: Data[];
+
+  # when the parsing is finished display the packet in the standard output
+	on %done {print self;}
+};

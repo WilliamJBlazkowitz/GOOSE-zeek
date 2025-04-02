@@ -1,0 +1,7 @@
+# Define use of GOOSE::Packet to parse the packet when Zeek call spicy::GOOSE analyzer
+packet analyzer spicy::GOOSE:
+  parse with GOOSE::goose_packet;
+
+# when the GOOSE:Packet has finished parsing the packet, triggers the goose event and provides to Zeek the values of the fields contained in the brackets.
+on GOOSE::goose_packet -> event goose(self.appid, self.lengthHeader, self.reserved1, self.reserved2, self.tag, self.lengthPdu, self.gocbRef,
+self.timeAllowedtoLive, self.Dataset, self.goID, self.Time, self.st_Num, self.sq_Num, self.Test, self.confRev, self.ndsCom, self.numDatSetEntries, self.allData);
